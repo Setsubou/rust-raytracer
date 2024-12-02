@@ -1,0 +1,8 @@
+[package]
+name = "raytracer-one-weekend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+simple_logger = "5.0.0"
+log = "0.4.20"
