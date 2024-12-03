@@ -41,8 +41,9 @@ impl Div<f64> for Vec3 {
             element: [
                 self.element[0] * (1.0 / rhs),
                 self.element[1] * (1.0 / rhs),
-                self.element[2] * (1.0 / rhs)
-        ]}
+                self.element[2] * (1.0 / rhs),
+            ],
+        }
     }
 }
 
@@ -54,16 +55,15 @@ impl Mul<f64> for Vec3 {
             element: [
                 self.element[0] * rhs,
                 self.element[1] * rhs,
-                self.element[2] * rhs
-        ]}
+                self.element[2] * rhs,
+            ],
+        }
     }
 }
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
-        Vec3 {
-            element: [x, y, z],
-        }
+        Vec3 { element: [x, y, z] }
     }
 
     pub fn zero() -> Vec3 {
@@ -86,7 +86,7 @@ impl Vec3 {
 
     pub fn negate(&self) -> Vec3 {
         Vec3 {
-            element: [-self.x(), -self.y(), -self.z()]
+            element: [-self.x(), -self.y(), -self.z()],
         }
     }
 
@@ -103,6 +103,9 @@ pub fn unit_vector(v: Vec3) -> Vec3 {
     v / v.length()
 }
 
+pub fn dot_product(u: Vec3, v: Vec3) -> f64 {
+    u.element[0] * v.element[0] + u.element[1] * v.element[1] + u.element[2] * v.element[2]
+}
 #[cfg(test)]
 mod vector_initialization {
     use super::*;
@@ -178,7 +181,7 @@ mod vector_operations {
 
         assert_eq!(v.z(), 3.0);
     }
-    
+
     #[test]
     fn negate_vector() {
         let v = Vec3::new(5.0, -2.0, 0.0).negate();
@@ -199,6 +202,10 @@ mod vector_operations {
     fn calculate_vector_length() {
         let v = Vec3::new(1.0, 2.0, -3.0);
 
-        assert!(abs_diff_eq!(v.length(), 3.7416573867739413, epsilon = f64::EPSILON));
+        assert!(abs_diff_eq!(
+            v.length(),
+            3.7416573867739413,
+            epsilon = f64::EPSILON
+        ));
     }
 }
