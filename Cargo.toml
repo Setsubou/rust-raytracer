@@ -6,3 +6,5 @@ edition = "2021"
 [dependencies]
 simple_logger = "5.0.0"
 log = "0.4.20"
+indicatif = "0.17.9"
+approx = "0.5.1"
