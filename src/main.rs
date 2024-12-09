@@ -2,64 +2,35 @@ pub mod color;
 pub mod point;
 pub mod ray;
 pub mod vec3;
+pub mod hittable;
+pub mod shapes;
+mod hittable_list;
+pub mod util;
 
 use color::{write_color, Color};
+use shapes::sphere::Sphere;
 use indicatif::ProgressBar;
 use log::info;
 use point::Point3;
+use ray::Ray;
 use simple_logger::SimpleLogger;
-use std::{fs::File, io::Write};
-use vec3::{dot_product, Vec3};
+use std::{fs::File, io::Write, rc::Rc};
+use vec3::Vec3;
 
 // TODO: Util function for vec3 is still incomplete
 // TODO: Maybe create a new config struct to store all the settings
 
-fn hit_sphere(center: Point3, radius: f64, ray: &ray::Ray) -> bool {
-    let oc = center - ray.origin();
+fn ray_color(ray: &Ray, world: &dyn hittable::Hittable) -> Color {
+    let mut rec = hittable::HitRecord::new();
 
-    let a = dot_product(ray.direction(), ray.direction());
-    let b = dot_product(ray.direction(), oc) * -2.0;
-    let c = dot_product(oc, oc) - radius * radius;
-    let discriminant = b * b - a * c * 4.0;
-
-    discriminant >= 0.0
-}
-
-fn ray_color(ray: &ray::Ray) -> Color {
-    if hit_sphere(
-        Point3 {
-            element: [0.0, 0.0, -1.0],
-        },
-        0.5,
-        ray,
-    ) {
-        return Color::new(1.0, 0.0, 0.0);
-    }
-
-    if hit_sphere(
-        Point3 {
-            element: [0.0, 0.5, -1.0],
-        },
-        0.5,
-        ray,
-    ) {
-        return Color::new(0.0, 1.0, 0.0);
-    }
-
-    if hit_sphere(
-        Point3 {
-            element: [0.0, -0.5, -1.0],
-        },
-        0.5,
-        ray,
-    ) {
-        return Color::new(0.0, 0.0, 1.0);
+    if world.hit(ray, 0.0, f64::INFINITY, &mut rec) {
+        return (rec.normal + Color::WHITE) * 0.5;
     }
 
     let unit_direction = vec3::unit_vector(ray.direction());
     let a = (unit_direction.y() + 1.0) * 0.5;
 
-    Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+    Color::WHITE * (1.0 - a) + Color::LIGHT_BLUE * a
 }
 
 fn main() {
@@ -93,6 +64,22 @@ fn main() {
         camera_center - Vec3::new(0.0, 0.0, FOCAL_LENGTH) - (viewport_u / 2.0) - (viewport_v / 2.0);
     let pixel_loc = viewport_upper_left + (pixel_delta_u + pixel_delta_v) * 0.5;
 
+    // World
+    let mut world = hittable_list::HittableList::new();
+    world.add(Rc::new(Sphere::new(
+        Point3 {
+            element: [0.0, 0.0, -1.0],
+        },
+        0.5,
+    )));
+
+    // world.add(Rc::new(Sphere::new(
+    //     Point3 {
+    //         element: [0.0, -100.0, -1.0],
+    //     },
+    //     100.0,
+    // )));
+
     //Headers
     let mut file = File::create("image.ppm").unwrap();
     file.write_all("P3\n".as_bytes()).unwrap();
@@ -110,10 +97,18 @@ fn main() {
             let pixel_center = pixel_loc + (pixel_delta_u * x.into()) + (pixel_delta_v * y.into());
             let ray_direction = pixel_center - camera_center;
 
-            let ray = ray::Ray::new(camera_center, ray_direction);
+            let ray = Ray::new(camera_center, ray_direction);
 
-            let pixel_color = ray_color(&ray);
-            write_color(&mut file, pixel_color);
+            let pixel_color = ray_color(&ray, &world);
+            let result = write_color(&mut file, pixel_color);
+
+            match result {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("Error rendering image: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
 
         progress_bar.inc(1);

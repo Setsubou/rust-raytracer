@@ -90,7 +90,7 @@ impl Vec3 {
         }
     }
 
-    fn length_squared(&self) -> f64 {
+    pub fn length_squared(&self) -> f64 {
         f64::powf(self.x(), 2.0) + f64::powf(self.y(), 2.0) + f64::powf(self.z(), 2.0)
     }
 
@@ -103,7 +103,7 @@ pub fn unit_vector(v: Vec3) -> Vec3 {
     v / v.length()
 }
 
-pub fn dot_product(u: Vec3, v: Vec3) -> f64 {
+pub fn dot_product(u: &Vec3, v: &Vec3) -> f64 {
     u.element[0] * v.element[0] + u.element[1] * v.element[1] + u.element[2] * v.element[2]
 }
 #[cfg(test)]
@@ -196,6 +196,14 @@ mod vector_operations {
         let v = Vec3::new(1.0, 2.0, -3.0);
 
         assert_eq!(v.length_squared(), 14.0);
+    }
+
+    #[test]
+    fn calculate_dot_vector() {
+        let u = Vec3::new(1.0, 2.0, 3.0);
+        let v = Vec3::new(2.0, 3.0, 4.0);
+
+        assert_eq!(dot_product(&u, &v), 20.0);
     }
 
     #[test]
