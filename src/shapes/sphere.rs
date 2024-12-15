@@ -1,5 +1,6 @@
 use crate::{
-    hittable::{self, Hittable},
+    hit_record::HitRecord,
+    hittable::Hittable,
     point::Point3,
     ray,
     vec3::{dot_product, unit_vector},
@@ -11,13 +12,7 @@ pub struct Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(
-        &self,
-        ray: &ray::Ray,
-        t_min: f64,
-        t_max: f64,
-        hit_record: &mut hittable::HitRecord,
-    ) -> bool {
+    fn hit(&self, ray: &ray::Ray, t_min: f64, t_max: f64, hit_record: &mut HitRecord) -> bool {
         let oc = self.center - ray.origin();
 
         let a = ray.direction().length_squared();

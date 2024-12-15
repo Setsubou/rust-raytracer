@@ -1,9 +1,6 @@
 use std::rc::Rc;
 
-use crate::{
-    hittable::{HitRecord, Hittable},
-    ray::Ray,
-};
+use crate::{hit_record::HitRecord, hittable::Hittable, ray::Ray};
 
 pub(crate) struct HittableList {
     pub objects: Vec<Rc<dyn Hittable>>,

@@ -1,4 +1,5 @@
 pub mod color;
+pub mod hit_record;
 pub mod hittable;
 mod hittable_list;
 pub mod point;
@@ -8,6 +9,7 @@ pub mod util;
 pub mod vec3;
 
 use color::{write_color, Color};
+use hit_record::HitRecord;
 use indicatif::ProgressBar;
 use log::info;
 use point::Point3;
@@ -21,7 +23,7 @@ use vec3::Vec3;
 // TODO: Maybe create a new config struct to store all the settings
 
 fn ray_color(ray: &Ray, world: &dyn hittable::Hittable) -> Color {
-    let mut rec = hittable::HitRecord::new();
+    let mut rec = HitRecord::new();
 
     if world.hit(ray, 0.0, f64::INFINITY, &mut rec) {
         return (rec.normal + Color::WHITE) * 0.5;
