@@ -1,7 +1,7 @@
 pub mod color;
 pub mod hit_record;
 pub mod hittable;
-mod hittable_list;
+pub mod hittable_list;
 pub mod point;
 pub mod ray;
 pub mod shapes;
@@ -19,7 +19,6 @@ use simple_logger::SimpleLogger;
 use std::{fs::File, io::Write, rc::Rc};
 use vec3::Vec3;
 
-// TODO: Util function for vec3 is still incomplete
 // TODO: Maybe create a new config struct to store all the settings
 
 fn ray_color(ray: &Ray, world: &dyn hittable::Hittable) -> Color {
