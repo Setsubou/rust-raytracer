@@ -1,18 +1,18 @@
 pub mod color;
+pub mod hittable;
+mod hittable_list;
 pub mod point;
 pub mod ray;
-pub mod vec3;
-pub mod hittable;
 pub mod shapes;
-mod hittable_list;
 pub mod util;
+pub mod vec3;
 
 use color::{write_color, Color};
-use shapes::sphere::Sphere;
 use indicatif::ProgressBar;
 use log::info;
 use point::Point3;
 use ray::Ray;
+use shapes::sphere::Sphere;
 use simple_logger::SimpleLogger;
 use std::{fs::File, io::Write, rc::Rc};
 use vec3::Vec3;

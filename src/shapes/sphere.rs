@@ -1,21 +1,30 @@
-use log::error;
-
-use crate::{hittable::{self, Hittable}, point::Point3, ray, vec3::{dot_product, unit_vector}};
+use crate::{
+    hittable::{self, Hittable},
+    point::Point3,
+    ray,
+    vec3::{dot_product, unit_vector},
+};
 
 pub struct Sphere {
     center: Point3,
-    radius: f64
+    radius: f64,
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &ray::Ray, t_min: f64, t_max: f64, hit_record: &mut hittable::HitRecord) -> bool {
+    fn hit(
+        &self,
+        ray: &ray::Ray,
+        t_min: f64,
+        t_max: f64,
+        hit_record: &mut hittable::HitRecord,
+    ) -> bool {
         let oc = self.center - ray.origin();
 
         let a = ray.direction().length_squared();
         let h = dot_product(&ray.direction(), &oc);
         let c = oc.length_squared() - self.radius.powi(2);
 
-        let discriminant = h.powi(2) - (a*c);
+        let discriminant = h.powi(2) - (a * c);
         if discriminant < 0.0 {
             return false;
         }
@@ -34,8 +43,8 @@ impl Hittable for Sphere {
 
         hit_record.t = root;
         hit_record.point = ray.at(hit_record.t);
-        
-        let outward_normal = unit_vector(&((hit_record.point - self.center) / self.radius)); 
+
+        let outward_normal = unit_vector(&((hit_record.point - self.center) / self.radius));
         hit_record.set_face_normal(ray, &outward_normal);
 
         true

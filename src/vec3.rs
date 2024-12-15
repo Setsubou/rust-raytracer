@@ -33,7 +33,7 @@ impl Sub<Vec3> for Vec3 {
     }
 }
 
-impl Neg<> for Vec3 {
+impl Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Self::Output {
@@ -83,7 +83,6 @@ impl Mul<f64> for Vec3 {
     }
 }
 
-
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
         Vec3 { element: [x, y, z] }
@@ -122,11 +121,11 @@ impl Vec3 {
     }
 
     pub fn unit_vector(&self) -> Vec3 {
-        unit_vector(&self)
+        unit_vector(self)
     }
 
     pub fn dot_product(&self, rhs: &Vec3) -> f64 {
-        dot_product(&self, &rhs)
+        dot_product(self, rhs)
     }
 }
 
