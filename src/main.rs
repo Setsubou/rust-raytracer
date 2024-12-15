@@ -27,7 +27,7 @@ fn ray_color(ray: &Ray, world: &dyn hittable::Hittable) -> Color {
         return (rec.normal + Color::WHITE) * 0.5;
     }
 
-    let unit_direction = vec3::unit_vector(ray.direction());
+    let unit_direction = vec3::unit_vector(&ray.direction());
     let a = (unit_direction.y() + 1.0) * 0.5;
 
     Color::WHITE * (1.0 - a) + Color::LIGHT_BLUE * a
@@ -73,12 +73,12 @@ fn main() {
         0.5,
     )));
 
-    // world.add(Rc::new(Sphere::new(
-    //     Point3 {
-    //         element: [0.0, -100.0, -1.0],
-    //     },
-    //     100.0,
-    // )));
+    world.add(Rc::new(Sphere::new(
+        Point3 {
+            element: [0.0, -100.5, -1.0],
+        },
+        100.0,
+    )));
 
     //Headers
     let mut file = File::create("image.ppm").unwrap();

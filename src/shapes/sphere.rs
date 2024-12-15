@@ -22,10 +22,10 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the acceptable range.
         let squared_discriminant = discriminant.sqrt();
-        let root =  (h - squared_discriminant) / a;
+        let root = (h - squared_discriminant) / a;
 
         if root <= t_min || t_max <= root {
-            let root = (h + squared_discriminant) /a;
+            let root = (h + squared_discriminant) / a;
 
             if root <= t_min || t_max <= root {
                 return false;
@@ -35,10 +35,10 @@ impl Hittable for Sphere {
         hit_record.t = root;
         hit_record.point = ray.at(hit_record.t);
         
-        let outward_normal = unit_vector((hit_record.point - self.center) / self.radius); 
-        hit_record.set_face_normal(ray, outward_normal);
+        let outward_normal = unit_vector(&((hit_record.point - self.center) / self.radius)); 
+        hit_record.set_face_normal(ray, &outward_normal);
 
-        return true;
+        true
     }
 }
 
