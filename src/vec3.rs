@@ -170,6 +170,21 @@ mod vector_math {
 
         assert_eq!(v1 + v2, Vec3::new(3.1, 7.2, 14.0));
     }
+    
+    #[test]
+    fn vector_sub_with_vector() {
+        let v1 = Vec3::new(1.0, 2.0, 3.0);
+        let v2 = Vec3::new(2.1, 5.2, 11.0);
+
+        assert_eq!(v1 - v2, Vec3::new(-1.1, -3.2, -8.0));   
+    }
+
+    #[test]
+    fn vector_negate() {
+        let v1 = Vec3::new(1.0, 2.0, -3.0);
+
+        assert_eq!(-v1, Vec3::new(-1.0, -2.0, 3.0));
+    }
 
     #[test]
     fn vector_mult_with_scalar() {
@@ -184,9 +199,18 @@ mod vector_math {
 
         assert_eq!(v / 2.0, Vec3::new(0.5, 1.0, 1.5));
     }
+
+    #[test]
+    fn vector_reference_div_with_scalar() {
+        let v = Vec3::new(1.0, 2.0, 3.0);
+
+        assert_eq!(&v / 2.0, Vec3::new(0.5, 1.0, 1.5));
+    }
+
 }
 #[cfg(test)]
 mod vector_operations {
+
     use approx::abs_diff_eq;
 
     use super::*;
@@ -229,14 +253,6 @@ mod vector_operations {
     }
 
     #[test]
-    fn calculate_dot_vector() {
-        let u = Vec3::new(1.0, 2.0, 3.0);
-        let v = Vec3::new(2.0, 3.0, 4.0);
-
-        assert_eq!(dot_product(&u, &v), 20.0);
-    }
-
-    #[test]
     fn calculate_vector_length() {
         let v = Vec3::new(1.0, 2.0, -3.0);
 
@@ -245,5 +261,40 @@ mod vector_operations {
             3.7416573867739413,
             epsilon = f64::EPSILON
         ));
+    }
+
+    #[test]
+    fn calculate_unit_vector() {
+        let v = Vec3::new(1.0, 2.0, -3.0);
+
+        assert_eq!(v.unit_vector(), Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732));   
+    }
+
+    #[test]
+    fn calculate_dot_product() {
+        let v1 = Vec3::new(1.0, 2.0, 3.0);
+        let v2 = Vec3::new(2.0, 3.0, 4.0);
+
+        assert_eq!(v1.dot_product(&v2), 20.0);
+    }
+}
+
+#[cfg(test)]
+mod vector_static_functions {
+    use super::*;
+
+    #[test]
+    fn calculate_dot_vector() {
+        let u = Vec3::new(1.0, 2.0, 3.0);
+        let v = Vec3::new(2.0, 3.0, 4.0);
+
+        assert_eq!(dot_product(&u, &v), 20.0);
+    }
+
+    #[test]
+    fn calculate_unit_vector() {
+        let v = Vec3::new(1.0, 2.0, -3.0);
+
+        assert_eq!(unit_vector(&v), Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732));
     }
 }
