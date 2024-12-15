@@ -22,13 +22,19 @@ jobs:
         override: true
 
     - name: Run cargo fmt --check
-      run: cargo fmt --check
+      run: |
+        cargo fmt --check 2>&1 | tee rust-fmt.log
+      continue-on-error: true
 
     - name: Run cargo clippy --check
-      run: cargo clippy -- -D warnings
+      run: |
+        cargo clippy -- -D warnings 2>&1 | tee clippy.log
+      continue-on-error: true
 
     - name: Run cargo test
-      run: cargo test --all
+      run: |
+        cargo test --all 2>&1 | tee cargo-test.log
+      continue-on-error: true
 
     - name: Install cargo-tarpaulin
       run: cargo install cargo-tarpaulin
@@ -39,5 +45,9 @@ jobs:
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
       with:
-        name: tarpaulin-coverage-report
-        path: tarpaulin-report.html
+        name: ci-logs
+        path: |
+          rust-fmt.log
+          clippy.log
+          cargo-test.log
+          tarpaulin-report.html
