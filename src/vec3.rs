@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub struct Vec3 {
@@ -28,6 +28,18 @@ impl Sub<Vec3> for Vec3 {
                 self.element[0] - rhs.element[0],
                 self.element[1] - rhs.element[1],
                 self.element[2] - rhs.element[2],
+            ],
+        }
+    }
+}
+
+impl AddAssign<Vec3> for Vec3 {
+    fn add_assign(&mut self, rhs: Vec3) {
+        *self = Self {
+            element: [
+                self.element[0] + rhs.element[0],
+                self.element[1] + rhs.element[1],
+                self.element[2] + rhs.element[2],
             ],
         }
     }

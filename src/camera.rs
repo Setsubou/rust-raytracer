@@ -11,6 +11,7 @@ use crate::{
     point::Point3,
     ray::Ray,
     shapes::interval::Interval,
+    util::random_double,
     vec3::{self, Vec3},
 };
 
@@ -20,10 +21,12 @@ pub struct Camera {
     image_height: u32,
     max_color: u32,
 
+    pub samples_per_pixel: u64,
     camera_center: Point3,
     focal_point: f64,
     viewport_height: f64,
     viewport_width: f64,
+    pixel_samples_scale: f64,
 
     viewport_u: Vec3,
     viewport_v: Vec3,
@@ -43,10 +46,12 @@ impl Default for Camera {
             image_height: 0,
             max_color: 0,
 
+            samples_per_pixel: 0,
             camera_center: Point3::zero(),
             focal_point: 0.0,
             viewport_height: 0.0,
             viewport_width: 0.0,
+            pixel_samples_scale: 0.0,
 
             viewport_u: Vec3::zero(),
             viewport_v: Vec3::zero(),
@@ -61,10 +66,11 @@ impl Default for Camera {
 }
 
 impl Camera {
-    pub fn new(image_width: u32, aspect_ratio: f64) -> Camera {
+    pub fn new(image_width: u32, aspect_ratio: f64, samples_per_pixel: u64) -> Camera {
         Camera {
             image_width,
             aspect_ratio,
+            samples_per_pixel,
             ..Default::default()
         }
     }
@@ -78,6 +84,7 @@ impl Camera {
         self.viewport_height = 2.0;
         self.viewport_width =
             self.viewport_height * (self.image_width as f64 / self.image_height as f64);
+        self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;
 
         self.viewport_u = Vec3::new(self.viewport_width, 0.0, 0.0);
         self.viewport_v = Vec3::new(0.0, -self.viewport_height, 0.0);
@@ -96,6 +103,7 @@ impl Camera {
         self.initialize();
 
         let mut file = File::create("image.ppm").unwrap();
+
         file.write_all("P3\n".as_bytes()).unwrap();
         file.write_all(format!("{} {}\n", self.image_width, self.image_height).as_bytes())
             .unwrap();
@@ -107,15 +115,22 @@ impl Camera {
 
         for y in 0..self.image_height {
             for x in 0..self.image_width {
-                let pixel_center = self.pixel_loc
-                    + (self.pixel_delta_u * x.into())
-                    + (self.pixel_delta_v * y.into());
-                let ray_direction = pixel_center - self.camera_center;
-                let ray = Ray::new(self.camera_center, ray_direction);
+                // let pixel_center = self.pixel_loc
+                //     + (self.pixel_delta_u * x.into())
+                //     + (self.pixel_delta_v * y.into());
+                // let ray_direction = pixel_center - self.camera_center;
+                // let ray = Ray::new(self.camera_center, ray_direction);
 
-                let pixel_color = Self::ray_color(&ray, world);
+                // let pixel_color = Self::ray_color(&ray, world);
 
-                let result = write_color(&mut file, pixel_color);
+                let mut pixel_color = Color::zero();
+
+                for _ in 0..self.samples_per_pixel {
+                    let ray = self.get_ray(x, y);
+                    pixel_color += Self::ray_color(&ray, world);
+                }
+
+                let result = write_color(&mut file, pixel_color * self.pixel_samples_scale);
 
                 match result {
                     Ok(_) => {}
@@ -130,6 +145,22 @@ impl Camera {
         }
 
         progress_bar.finish();
+    }
+
+    fn get_ray(&self, x: u32, y: u32) -> Ray {
+        let offset = Self::sample_square();
+
+        let pixel_sample = self.pixel_loc
+            + (self.pixel_delta_u * (x as f64 + offset.x()))
+            + (self.pixel_delta_v * (y as f64 + offset.y()));
+        let ray_origin = self.camera_center;
+        let ray_direction = pixel_sample - ray_origin;
+
+        Ray::new(ray_origin, ray_direction)
+    }
+
+    fn sample_square() -> Vec3 {
+        Vec3::new(random_double() - 0.5, random_double() - 0.5, 0.0)
     }
 
     fn ray_color(ray: &Ray, world: &dyn hittable::Hittable) -> Color {

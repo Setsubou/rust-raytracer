@@ -36,7 +36,7 @@ fn main() {
         100.0,
     )));
 
-    let mut camera = Camera::new(720, 16.0 / 9.0);
+    let mut camera = Camera::new(540, 16.0 / 9.0, 10);
 
     camera.render(&mut world);
 }

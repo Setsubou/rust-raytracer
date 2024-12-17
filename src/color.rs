@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write};
 
-use crate::vec3;
+use crate::{shapes::interval::Interval, vec3};
 
 pub type Color = vec3::Vec3;
 
@@ -31,9 +31,15 @@ impl Color {
 }
 
 pub fn write_color(file: &mut File, color: Color) -> std::io::Result<()> {
-    let r = (255.00 * color.x()).round() as u32;
-    let g = (255.00 * color.y()).round() as u32;
-    let b = (255.00 * color.z()).round() as u32;
+    let r = color.x();
+    let g = color.y();
+    let b = color.z();
 
-    file.write_all(format!("{} {} {}\n", r, g, b).as_bytes())
+    let intensity = Interval::new(0.000, 0.999);
+
+    let rbyte = (intensity.clamp(r) * 255.0) as u64;
+    let gbyte = (intensity.clamp(g) * 255.0) as u64;
+    let bbyte = (intensity.clamp(b) * 255.0) as u64;
+
+    file.write_all(format!("{} {} {}\n", rbyte, gbyte, bbyte).as_bytes())
 }
