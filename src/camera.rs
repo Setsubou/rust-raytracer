@@ -90,7 +90,7 @@ impl Camera {
             - (self.viewport_u / 2.0)
             - (self.viewport_v / 2.0);
         self.pixel_loc = self.viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
-    }   
+    }
 
     pub fn render(&mut self, world: &mut HittableList) {
         self.initialize();

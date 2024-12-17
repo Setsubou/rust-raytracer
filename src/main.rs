@@ -9,7 +9,7 @@ pub mod shapes;
 pub mod util;
 pub mod vec3;
 
-use camera::camera::Camera;
+use camera::Camera;
 use point::Point3;
 use shapes::sphere::Sphere;
 use simple_logger::SimpleLogger;
