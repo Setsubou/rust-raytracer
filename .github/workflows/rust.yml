@@ -1,4 +1,4 @@
-name: CI
+name: Rust CI
 
 on:
   pull_request:
@@ -21,20 +21,17 @@ jobs:
         toolchain: stable
         override: true
 
-    - name: Run cargo fmt --check
+    - name: Run cargo fmt
       run: |
-        cargo fmt --check 2>&1 | tee rust-fmt.log
-      continue-on-error: true
+        cargo fmt -- --check 2>&1 | tee rust-fmt.log
 
-    - name: Run cargo clippy --check
+    - name: Run cargo clippy
       run: |
         cargo clippy -- -D warnings 2>&1 | tee clippy.log
-      continue-on-error: true
 
     - name: Run cargo test
       run: |
         cargo test --all 2>&1 | tee cargo-test.log
-      continue-on-error: true
 
     - name: Install cargo-tarpaulin
       run: cargo install cargo-tarpaulin
