@@ -4,7 +4,14 @@ use indicatif::ProgressBar;
 use log::info;
 
 use crate::{
-    color::{write_color, Color}, hit_record::HitRecord, hittable, hittable_list::HittableList, point::Point3, ray::Ray, shapes::interval::Interval, vec3::{self, Vec3}
+    color::{write_color, Color},
+    hit_record::HitRecord,
+    hittable,
+    hittable_list::HittableList,
+    point::Point3,
+    ray::Ray,
+    shapes::interval::Interval,
+    vec3::{self, Vec3},
 };
 
 pub struct Camera {
@@ -54,12 +61,35 @@ impl Default for Camera {
 }
 
 impl Camera {
-    pub fn new (image_width: u32, aspect_ratio: f64) -> Camera {
+    pub fn new(image_width: u32, aspect_ratio: f64) -> Camera {
         Camera {
             image_width,
             aspect_ratio,
             ..Default::default()
         }
+    }
+
+    fn initialize(&mut self) {
+        self.image_height = (self.image_width as f64 / self.aspect_ratio) as u32;
+        self.camera_center = Point3::zero();
+        self.max_color = 255;
+
+        self.focal_point = 1.0;
+        self.viewport_height = 2.0;
+        self.viewport_width =
+            self.viewport_height * (self.image_width as f64 / self.image_height as f64);
+
+        self.viewport_u = Vec3::new(self.viewport_width, 0.0, 0.0);
+        self.viewport_v = Vec3::new(0.0, -self.viewport_height, 0.0);
+
+        self.pixel_delta_u = self.viewport_u / self.image_width.into();
+        self.pixel_delta_v = self.viewport_v / self.image_height.into();
+
+        self.viewport_upper_left = self.camera_center
+            - Vec3::new(0.0, 0.0, self.focal_point)
+            - (self.viewport_u / 2.0)
+            - (self.viewport_v / 2.0);
+        self.pixel_loc = self.viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
     }
 
     pub fn render(&mut self, world: &mut HittableList) {
@@ -77,12 +107,14 @@ impl Camera {
 
         for y in 0..self.image_height {
             for x in 0..self.image_width {
-                let pixel_center = self.pixel_loc + (self.pixel_delta_u * x.into()) + (self.pixel_delta_v * y.into());
+                let pixel_center = self.pixel_loc
+                    + (self.pixel_delta_u * x.into())
+                    + (self.pixel_delta_v * y.into());
                 let ray_direction = pixel_center - self.camera_center;
                 let ray = Ray::new(self.camera_center, ray_direction);
 
                 let pixel_color = Self::ray_color(&ray, world);
-                
+
                 let result = write_color(&mut file, pixel_color);
 
                 match result {
@@ -98,25 +130,6 @@ impl Camera {
         }
 
         progress_bar.finish();
-    }
-
-    fn initialize(&mut self) {
-        self.image_height = (self.image_width as f64 / self.aspect_ratio) as u32;
-        self.camera_center = Point3::zero();
-        self.max_color = 255;
-
-        self.focal_point = 1.0;
-        self.viewport_height = 2.0;
-        self.viewport_width = self.viewport_height * (self.image_width as f64 / self.image_height as f64);
-
-        self.viewport_u = Vec3::new(self.viewport_width, 0.0, 0.0);
-        self.viewport_v = Vec3::new(0.0, -self.viewport_height, 0.0);
-
-        self.pixel_delta_u = self.viewport_u / self.image_width.into();
-        self.pixel_delta_v = self.viewport_v / self.image_height.into();
-
-        self.viewport_upper_left = self.camera_center - Vec3::new(0.0, 0.0, self.focal_point) - (self.viewport_u / 2.0) - (self.viewport_v / 2.0);
-        self.pixel_loc = self.viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
     }
 
     fn ray_color(ray: &Ray, world: &dyn hittable::Hittable) -> Color {

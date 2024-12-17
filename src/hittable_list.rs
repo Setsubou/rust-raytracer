@@ -6,6 +6,12 @@ pub struct HittableList {
     pub objects: Vec<Rc<dyn Hittable>>,
 }
 
+impl Default for HittableList {
+    fn default() -> Self {
+        HittableList::new()
+    }
+}
+
 impl Hittable for HittableList {
     fn hit(&self, ray: &Ray, ray_t: Interval, hit_record: &mut HitRecord) -> bool {
         let mut hit_anything = false;
@@ -13,7 +19,11 @@ impl Hittable for HittableList {
         let mut temp_record: HitRecord = HitRecord::new();
 
         for object in &self.objects {
-            if object.hit(ray, Interval::new(ray_t.min(), closest_so_far), &mut temp_record) {
+            if object.hit(
+                ray,
+                Interval::new(ray_t.min(), closest_so_far),
+                &mut temp_record,
+            ) {
                 hit_anything = true;
                 closest_so_far = temp_record.t;
                 *hit_record = temp_record.clone();

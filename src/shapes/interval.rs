@@ -21,7 +21,7 @@ impl Interval {
     }
 
     pub fn contains(&self, x: f64) -> bool {
-        self.min <= x && x <= self.max 
+        self.min <= x && x <= self.max
     }
 
     pub fn surrounds(&self, x: f64) -> bool {
@@ -29,5 +29,11 @@ impl Interval {
     }
 }
 
-const EMPTY: Interval = Interval { min: f64::INFINITY, max: f64::NEG_INFINITY };
-const UNIVERSE: Interval = Interval { min: f64::NEG_INFINITY, max: f64::INFINITY };
+const _EMPTY: Interval = Interval {
+    min: f64::INFINITY,
+    max: f64::NEG_INFINITY,
+};
+const _UNIVERSE: Interval = Interval {
+    min: f64::NEG_INFINITY,
+    max: f64::INFINITY,
+};

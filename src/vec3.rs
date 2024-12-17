@@ -170,13 +170,13 @@ mod vector_math {
 
         assert_eq!(v1 + v2, Vec3::new(3.1, 7.2, 14.0));
     }
-    
+
     #[test]
     fn vector_sub_with_vector() {
         let v1 = Vec3::new(1.0, 2.0, 3.0);
         let v2 = Vec3::new(2.1, 5.2, 11.0);
 
-        assert_eq!(v1 - v2, Vec3::new(-1.1, -3.2, -8.0));   
+        assert_eq!(v1 - v2, Vec3::new(-1.1, -3.2, -8.0));
     }
 
     #[test]
@@ -206,7 +206,6 @@ mod vector_math {
 
         assert_eq!(&v / 2.0, Vec3::new(0.5, 1.0, 1.5));
     }
-
 }
 #[cfg(test)]
 mod vector_operations {
@@ -267,7 +266,10 @@ mod vector_operations {
     fn calculate_unit_vector() {
         let v = Vec3::new(1.0, 2.0, -3.0);
 
-        assert_eq!(v.unit_vector(), Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732));   
+        assert_eq!(
+            v.unit_vector(),
+            Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732)
+        );
     }
 
     #[test]
@@ -295,6 +297,9 @@ mod vector_static_functions {
     fn calculate_unit_vector() {
         let v = Vec3::new(1.0, 2.0, -3.0);
 
-        assert_eq!(unit_vector(&v), Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732));
+        assert_eq!(
+            unit_vector(&v),
+            Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732)
+        );
     }
 }
