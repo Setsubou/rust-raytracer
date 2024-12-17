@@ -170,6 +170,21 @@ mod vector_math {
 
         assert_eq!(v1 + v2, Vec3::new(3.1, 7.2, 14.0));
     }
+    
+    #[test]
+    fn vector_sub_with_vector() {
+        let v1 = Vec3::new(1.0, 2.0, 3.0);
+        let v2 = Vec3::new(2.1, 5.2, 11.0);
+
+        assert_eq!(v1 - v2, Vec3::new(-1.1, -3.2, -8.0));   
+    }
+
+    #[test]
+    fn vector_negate() {
+        let v1 = Vec3::new(1.0, 2.0, -3.0);
+
+        assert_eq!(-v1, Vec3::new(-1.0, -2.0, 3.0));
+    }
 
     #[test]
     fn vector_sub_with_vector() {
