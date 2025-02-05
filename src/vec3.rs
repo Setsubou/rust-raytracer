@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
+use crate::util::{random_double, random_double_with_range};
+
 #[derive(Clone, PartialEq, Debug, Copy)]
 pub struct Vec3 {
     pub element: [f64; 3],
@@ -33,6 +35,20 @@ impl Sub<Vec3> for Vec3 {
     }
 }
 
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+    
+    fn mul(self, rhs: Self) -> Self::Output {
+        Vec3 {
+            element: [
+                self.element[0] * rhs.element[0],
+                self.element[1] * rhs.element[1],
+                self.element[2] * rhs.element[2],
+            ],
+        }
+    }
+}
+
 impl AddAssign<Vec3> for Vec3 {
     fn add_assign(&mut self, rhs: Vec3) {
         *self = Self {
@@ -49,25 +65,13 @@ impl Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Self::Output {
-        self.negate()
-    }
-}
-
-impl Div<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn div(self, rhs: f64) -> Self::Output {
         Vec3 {
-            element: [
-                self.element[0] * (1.0 / rhs),
-                self.element[1] * (1.0 / rhs),
-                self.element[2] * (1.0 / rhs),
-            ],
+            element: [-self.x(), -self.y(), -self.z()],
         }
     }
 }
 
-impl Div<f64> for &Vec3 {
+impl Div<f64> for Vec3 {
     type Output = Vec3;
 
     fn div(self, rhs: f64) -> Self::Output {
@@ -95,6 +99,14 @@ impl Mul<f64> for Vec3 {
     }
 }
 
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        rhs * self
+    }
+}
+
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
         Vec3 { element: [x, y, z] }
@@ -118,36 +130,89 @@ impl Vec3 {
         self.element[2]
     }
 
-    pub fn negate(&self) -> Vec3 {
-        Vec3 {
-            element: [-self.x(), -self.y(), -self.z()],
-        }
-    }
-
     pub fn length_squared(&self) -> f64 {
-        f64::powf(self.x(), 2.0) + f64::powf(self.y(), 2.0) + f64::powf(self.z(), 2.0)
+        self.x().powi(2) + self.y().powi(2) + self.z().powi(2)
     }
 
     pub fn length(&self) -> f64 {
-        f64::sqrt(self.length_squared())
+        self.length_squared().sqrt()
     }
 
-    pub fn unit_vector(&self) -> Vec3 {
+    pub fn unit_vector(self) -> Vec3 {
         unit_vector(self)
     }
 
-    pub fn dot_product(&self, rhs: &Vec3) -> f64 {
+    pub fn close_to_zero(&self) -> bool {
+        // Return true if all vector dimension is close to zero
+        let s = 1e-8;
+    
+        (self.x().abs() < s) && (self.y().abs() < s) && (self.z().abs() < s)
+    }
+
+    pub fn dot_product(self, rhs: Vec3) -> f64 {
         dot_product(self, rhs)
     }
 }
 
-pub fn unit_vector(v: &Vec3) -> Vec3 {
+pub fn unit_vector(v: Vec3) -> Vec3 {
     v / v.length()
 }
 
-pub fn dot_product(u: &Vec3, v: &Vec3) -> f64 {
+pub fn dot_product(u: Vec3, v: Vec3) -> f64 {
     u.element[0] * v.element[0] + u.element[1] * v.element[1] + u.element[2] * v.element[2]
 }
+
+pub fn cross_product(u: Vec3, v: Vec3) -> Vec3 {
+    Vec3::new(
+        (u.y() * v.z()) - (u.z() * v.y()),
+        (u.z() * v.x()) - (u.x() * v.z()),
+        (u.x() * v.y()) - (u.y() * v.x()),
+    )
+}
+
+pub fn generate_random_vector() -> Vec3 {
+    Vec3::new(random_double(), random_double(), random_double())
+}
+
+pub fn generate_random_vector_with_range(min: f64, max: f64) -> Vec3 {
+    Vec3::new(
+        random_double_with_range(min, max),
+        random_double_with_range(min, max),
+        random_double_with_range(min, max),
+    )
+}
+
+pub fn generate_random_unit_vector() -> Vec3 {
+    loop {
+        let vector = generate_random_vector_with_range(-1.0, 1.0);
+        let length_squared = vector.length_squared();
+
+        if 1e-160 < length_squared && length_squared <= 1.0 {
+            return vector / length_squared.sqrt();
+        }
+    }
+}
+
+pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
+    let on_unit_sphere = generate_random_unit_vector();
+
+    if dot_product(on_unit_sphere, normal) > 0.0 {
+        on_unit_sphere
+    } else {
+        -on_unit_sphere
+    }
+}
+
+pub fn random_unit_disk() -> Vec3 {
+    loop {
+        let p = Vec3::new(random_double_with_range(-1.0, 1.0), random_double_with_range(-1.0, 1.0), 0.0);
+
+        if p.length_squared() < 1.0 {
+            return p;
+        }
+    }
+}
+
 #[cfg(test)]
 mod vector_initialization {
     use super::*;
@@ -192,13 +257,6 @@ mod vector_math {
     }
 
     #[test]
-    fn vector_negate() {
-        let v1 = Vec3::new(1.0, 2.0, -3.0);
-
-        assert_eq!(-v1, Vec3::new(-1.0, -2.0, 3.0));
-    }
-
-    #[test]
     fn vector_mult_with_scalar() {
         let v = Vec3::new(1.0, 2.0, 3.0);
 
@@ -212,12 +270,6 @@ mod vector_math {
         assert_eq!(v / 2.0, Vec3::new(0.5, 1.0, 1.5));
     }
 
-    #[test]
-    fn vector_reference_div_with_scalar() {
-        let v = Vec3::new(1.0, 2.0, 3.0);
-
-        assert_eq!(&v / 2.0, Vec3::new(0.5, 1.0, 1.5));
-    }
 }
 #[cfg(test)]
 mod vector_operations {
@@ -249,7 +301,7 @@ mod vector_operations {
 
     #[test]
     fn negate_vector() {
-        let v = Vec3::new(5.0, -2.0, 0.0).negate();
+        let v = -Vec3::new(5.0, -2.0, 0.0);
 
         assert_eq!(v.x(), -5.0);
         assert_eq!(v.y(), 2.0);
@@ -289,7 +341,7 @@ mod vector_operations {
         let v1 = Vec3::new(1.0, 2.0, 3.0);
         let v2 = Vec3::new(2.0, 3.0, 4.0);
 
-        assert_eq!(v1.dot_product(&v2), 20.0);
+        assert_eq!(v1.dot_product(v2), 20.0);
     }
 }
 
@@ -302,7 +354,7 @@ mod vector_static_functions {
         let u = Vec3::new(1.0, 2.0, 3.0);
         let v = Vec3::new(2.0, 3.0, 4.0);
 
-        assert_eq!(dot_product(&u, &v), 20.0);
+        assert_eq!(dot_product(u, v), 20.0);
     }
 
     #[test]
@@ -310,7 +362,7 @@ mod vector_static_functions {
         let v = Vec3::new(1.0, 2.0, -3.0);
 
         assert_eq!(
-            unit_vector(&v),
+            unit_vector(v),
             Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732)
         );
     }

@@ -1,17 +1,18 @@
+use std::rc::Rc;
+
 use log::error;
 
 use crate::{
-    point::Point3,
-    ray::Ray,
-    vec3::{dot_product, Vec3},
+    color::Color, material::{lambertian::Lambertian, material::Material}, point::Point3, ray::Ray, vec3::{dot_product, Vec3}
 };
 
 #[derive(Clone)]
 pub struct HitRecord {
+    pub material: Rc<dyn Material>,
     pub point: Point3,
     pub normal: Vec3,
     pub t: f64,
-    pub front_face: bool,
+    pub is_front_face: bool,
 }
 
 impl Default for HitRecord {
@@ -20,7 +21,8 @@ impl Default for HitRecord {
             point: Point3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
             t: 0.0,
-            front_face: true,
+            is_front_face: true,
+            material: Rc::new(Lambertian::new(Color::WHITE)),
         }
     }
 }
@@ -31,27 +33,26 @@ impl HitRecord {
             point: Point3::new(0.0, 0.0, 0.0),
             normal: Vec3::new(0.0, 0.0, 0.0),
             t: 0.0,
-            front_face: false,
+            is_front_face: false,
+            material: Rc::new(Lambertian::new(Color::WHITE)),
         }
     }
 
-    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: &Vec3) {
-        // Outward normal must be a unit vector
-
+    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vec3) {
         if outward_normal.length() - 1.0 > f64::EPSILON {
             error!(
-                "Invalid normal, it must be a unit vector, it's length are {}",
+                "Invalid vector, it must be a unit vector, it's length are {}",
                 outward_normal.length()
             );
             std::process::exit(0);
         }
 
-        self.front_face = dot_product(&ray.direction(), outward_normal) < f64::EPSILON;
+        self.is_front_face = dot_product(ray.direction(), outward_normal) < 0.0;
 
-        self.normal = if self.front_face {
-            *outward_normal
+        self.normal = if self.is_front_face {
+            outward_normal
         } else {
-            -*outward_normal
+            -outward_normal
         };
     }
 }

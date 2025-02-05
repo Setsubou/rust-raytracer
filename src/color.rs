@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write};
 
-use crate::{shapes::interval::Interval, vec3};
+use crate::{shapes::interval::Interval, util::{random_double, random_double_with_range}, vec3};
 
 pub type Color = vec3::Vec3;
 
@@ -28,12 +28,31 @@ impl Color {
     pub fn from_hex(_hex: String) -> Color {
         todo!()
     }
+    
+    pub fn random() -> Color {
+        Color {
+            element: [
+                random_double_with_range(0.0, 1.0),
+                random_double_with_range(0.0, 1.0),
+                random_double_with_range(0.0, 1.0),
+            ],
+        }
+}
+}
+
+fn linear_to_gamma(linear_input: f64) -> f64 {
+    if linear_input > 0.0 {
+        return linear_input.sqrt();
+    }
+
+    return 0.0;
 }
 
 pub fn write_color(file: &mut File, color: Color) -> std::io::Result<()> {
-    let r = color.x();
-    let g = color.y();
-    let b = color.z();
+    // Get the color value and apply gamma transformation
+    let r = linear_to_gamma(color.x());
+    let g = linear_to_gamma(color.y());
+    let b = linear_to_gamma(color.z());
 
     let intensity = Interval::new(0.000, 0.999);
 
