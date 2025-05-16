@@ -37,7 +37,7 @@ impl Sub<Vec3> for Vec3 {
 
 impl Mul<Vec3> for Vec3 {
     type Output = Vec3;
-    
+
     fn mul(self, rhs: Self) -> Self::Output {
         Vec3 {
             element: [
@@ -139,35 +139,29 @@ impl Vec3 {
     }
 
     pub fn unit_vector(self) -> Vec3 {
-        unit_vector(self)
+        self / self.length()
     }
 
+    // Return true if all vector dimension is close to zero
     pub fn close_to_zero(&self) -> bool {
-        // Return true if all vector dimension is close to zero
         let s = 1e-8;
-    
+
         (self.x().abs() < s) && (self.y().abs() < s) && (self.z().abs() < s)
     }
 
-    pub fn dot_product(self, rhs: Vec3) -> f64 {
-        dot_product(self, rhs)
+    pub fn dot_product(&self, rhs: Vec3) -> f64 {
+        (self.element[0] * rhs.element[0])
+            + (self.element[1] * rhs.element[1])
+            + (self.element[2] * rhs.element[2])
     }
-}
-
-pub fn unit_vector(v: Vec3) -> Vec3 {
-    v / v.length()
-}
-
-pub fn dot_product(u: Vec3, v: Vec3) -> f64 {
-    u.element[0] * v.element[0] + u.element[1] * v.element[1] + u.element[2] * v.element[2]
-}
-
-pub fn cross_product(u: Vec3, v: Vec3) -> Vec3 {
-    Vec3::new(
-        (u.y() * v.z()) - (u.z() * v.y()),
-        (u.z() * v.x()) - (u.x() * v.z()),
-        (u.x() * v.y()) - (u.y() * v.x()),
-    )
+    
+    pub fn cross_product(self, rhs: Vec3) -> Vec3 {
+        Vec3::new(
+            (self.y() * rhs.z()) - (self.z() * rhs.y()),
+            (self.z() * rhs.x()) - (self.x() * rhs.z()),
+            (self.x() * rhs.y()) - (self.y() * rhs.x()),
+        )
+    }
 }
 
 pub fn generate_random_vector() -> Vec3 {
@@ -196,7 +190,7 @@ pub fn generate_random_unit_vector() -> Vec3 {
 pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
     let on_unit_sphere = generate_random_unit_vector();
 
-    if dot_product(on_unit_sphere, normal) > 0.0 {
+    if normal.dot_product(on_unit_sphere) > 0.0 {
         on_unit_sphere
     } else {
         -on_unit_sphere
@@ -205,7 +199,11 @@ pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
 
 pub fn random_unit_disk() -> Vec3 {
     loop {
-        let p = Vec3::new(random_double_with_range(-1.0, 1.0), random_double_with_range(-1.0, 1.0), 0.0);
+        let p = Vec3::new(
+            random_double_with_range(-1.0, 1.0),
+            random_double_with_range(-1.0, 1.0),
+            0.0,
+        );
 
         if p.length_squared() < 1.0 {
             return p;
@@ -269,7 +267,6 @@ mod vector_math {
 
         assert_eq!(v / 2.0, Vec3::new(0.5, 1.0, 1.5));
     }
-
 }
 #[cfg(test)]
 mod vector_operations {
@@ -354,7 +351,7 @@ mod vector_static_functions {
         let u = Vec3::new(1.0, 2.0, 3.0);
         let v = Vec3::new(2.0, 3.0, 4.0);
 
-        assert_eq!(dot_product(u, v), 20.0);
+        assert_eq!(u.dot_product(v), 20.0);
     }
 
     #[test]
@@ -362,7 +359,7 @@ mod vector_static_functions {
         let v = Vec3::new(1.0, 2.0, -3.0);
 
         assert_eq!(
-            unit_vector(v),
+            v.unit_vector(),
             Vec3::new(0.2672612419124244, 0.5345224838248488, -0.8017837257372732)
         );
     }

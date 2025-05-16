@@ -1,7 +1,8 @@
 use std::rc::Rc;
 
 use crate::{
-    hit_record::HitRecord, hittable::Hittable, material::material::Material, point::Point3, ray::Ray, vec3::{dot_product, unit_vector}
+    hit_record::HitRecord, hittable::Hittable, material::material::Material, point::Point3,
+    ray::Ray,
 };
 
 use super::interval::Interval;
@@ -17,7 +18,7 @@ impl Hittable for Sphere {
         let oc = self.center - ray.origin();
 
         let a = ray.direction().length_squared();
-        let h = dot_product(ray.direction(), oc);
+        let h = ray.direction().dot_product(oc);
         let c = oc.length_squared() - self.radius.powi(2);
 
         let discriminant = h.powi(2) - (a * c);
@@ -40,7 +41,7 @@ impl Hittable for Sphere {
         hit_record.t = root;
         hit_record.point = ray.at(hit_record.t);
 
-        let outward_normal = unit_vector((hit_record.point - self.center) / self.radius);
+        let outward_normal = ((hit_record.point - self.center) / self.radius).unit_vector();
         hit_record.set_face_normal(ray, outward_normal);
         hit_record.material = self.material.clone();
 
@@ -52,6 +53,10 @@ impl Sphere {
     pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
         let radius = radius.max(0.0);
 
-        Sphere { center, radius, material}
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }

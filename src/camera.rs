@@ -1,4 +1,4 @@
-use core::{f64, panic};
+use core::f64;
 use std::{fs::File, io::Write};
 
 use indicatif::ProgressBar;
@@ -13,7 +13,7 @@ use crate::{
     ray::Ray,
     shapes::interval::Interval,
     util::{degrees_to_radians, random_double},
-    vec3::{self, cross_product, random_unit_disk, unit_vector, Vec3},
+    vec3::{random_unit_disk, Vec3},
 };
 
 struct FrameBasis {
@@ -53,8 +53,8 @@ pub struct Camera {
     pub look_from: Point3,
     pub look_at: Point3,
     pub vup: Vec3,
-    
-    frame_basis: FrameBasis
+
+    frame_basis: FrameBasis,
 }
 
 impl Default for Camera {
@@ -86,7 +86,11 @@ impl Default for Camera {
 
             viewport_upper_left: Vec3::zero(),
             pixel_loc: Vec3::zero(),
-            frame_basis: FrameBasis { u: Vec3::zero(), v: Vec3::zero(), w: Vec3::zero() },
+            frame_basis: FrameBasis {
+                u: Vec3::zero(),
+                v: Vec3::zero(),
+                w: Vec3::zero(),
+            },
 
             defocus_angle: 0.0,
             focus_distance: 10.0,
@@ -138,9 +142,9 @@ impl Camera {
         self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;
 
         // Setting frame basis for the camera coordinate frame
-        self.frame_basis.w = unit_vector(self.look_from - self.look_at);
-        self.frame_basis.u = unit_vector(cross_product(self.vup, self.frame_basis.w));
-        self.frame_basis.v = cross_product(self.frame_basis.w, self.frame_basis.u);
+        self.frame_basis.w = (self.look_from - self.look_at).unit_vector();
+        self.frame_basis.u = (self.vup.cross_product(self.frame_basis.w)).unit_vector();
+        self.frame_basis.v = self.frame_basis.w.cross_product(self.frame_basis.u);
 
         self.viewport_u = self.viewport_width * self.frame_basis.u;
         self.viewport_v = self.viewport_height * -self.frame_basis.v;
@@ -154,7 +158,8 @@ impl Camera {
             - (self.viewport_v / 2.0);
         self.pixel_loc = self.viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
 
-        let defocus_radius = self.focus_distance * degrees_to_radians(self.defocus_angle / 2.0).tan();
+        let defocus_radius =
+            self.focus_distance * degrees_to_radians(self.defocus_angle / 2.0).tan();
         self.defocus_disk_u = self.frame_basis.u * defocus_radius;
         self.defocus_disk_v = self.frame_basis.v * defocus_radius;
     }
@@ -181,7 +186,7 @@ impl Camera {
                     let ray = self.get_ray(x, y);
                     pixel_color += Self::ray_color(&ray, world, self.max_ray_depth);
                 }
-                
+
                 let result = write_color(&mut file, pixel_color * self.pixel_samples_scale);
 
                 match result {
@@ -206,7 +211,11 @@ impl Camera {
             + (self.pixel_delta_u * (x as f64 + offset.x()))
             + (self.pixel_delta_v * (y as f64 + offset.y()));
 
-        let ray_origin = if self.defocus_angle <= 0.0 {self.camera_center} else {self.defocus_disk_sample()};
+        let ray_origin = if self.defocus_angle <= 0.0 {
+            self.camera_center
+        } else {
+            self.defocus_disk_sample()
+        };
         let ray_direction = pixel_sample - ray_origin;
 
         Ray::new(ray_origin, ray_direction)
@@ -234,14 +243,17 @@ impl Camera {
             let mut scattered_ray = Ray::new(Vec3::zero(), Vec3::zero());
             let mut attenuation: Color = Color::WHITE;
 
-            if rec.material.scatter(ray, &rec, &mut attenuation, &mut scattered_ray) {
+            if rec
+                .material
+                .scatter(ray, &rec, &mut attenuation, &mut scattered_ray)
+            {
                 return attenuation * Self::ray_color(&scattered_ray, world, max_ray_depth - 1);
             }
 
             return Color::BLACK;
         }
 
-        let unit_direction = vec3::unit_vector(ray.direction());
+        let unit_direction = ray.direction().unit_vector();
         let a = (unit_direction.y() + 1.0) * 0.5;
 
         Color::WHITE * (1.0 - a) + Color::LIGHT_BLUE * a

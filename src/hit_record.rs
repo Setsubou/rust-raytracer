@@ -3,7 +3,11 @@ use std::rc::Rc;
 use log::error;
 
 use crate::{
-    color::Color, material::{lambertian::Lambertian, material::Material}, point::Point3, ray::Ray, vec3::{dot_product, Vec3}
+    color::Color,
+    material::{lambertian::Lambertian, material::Material},
+    point::Point3,
+    ray::Ray,
+    vec3::Vec3,
 };
 
 #[derive(Clone)]
@@ -47,7 +51,7 @@ impl HitRecord {
             std::process::exit(0);
         }
 
-        self.is_front_face = dot_product(ray.direction(), outward_normal) < 0.0;
+        self.is_front_face = ray.direction().dot_product(outward_normal) < 0.0;
 
         self.normal = if self.is_front_face {
             outward_normal

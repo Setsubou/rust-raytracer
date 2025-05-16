@@ -3,13 +3,19 @@ use crate::{color::Color, ray::Ray, vec3::generate_random_unit_vector};
 use super::material::Material;
 
 pub struct Lambertian {
-    albedo: Color
+    albedo: Color,
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _ray_in: &crate::ray::Ray, hit_record: &crate::hit_record::HitRecord, attenuation: &mut Color, scattered_ray: &mut Ray) -> bool {
+    fn scatter(
+        &self,
+        _ray_in: &crate::ray::Ray,
+        hit_record: &crate::hit_record::HitRecord,
+        attenuation: &mut Color,
+        scattered_ray: &mut Ray,
+    ) -> bool {
         let mut scatter_direction = hit_record.normal + generate_random_unit_vector();
-        
+
         // Catch rogue scatter direction that is close to zero
         if scatter_direction.close_to_zero() {
             scatter_direction = hit_record.normal;
@@ -24,6 +30,6 @@ impl Material for Lambertian {
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Lambertian {
-        Lambertian{albedo}
+        Lambertian { albedo }
     }
 }
